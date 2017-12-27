@@ -37,7 +37,7 @@ java -jar target/scs-source-http-1.0.0-RELEASE.jar --spring.cloud.stream.default
 
 java -jar target/scs-processor-geocoding-reverse-1.0.0-RELEASE.jar --spring.cloud.stream.defaultBinder=rabbit --logging.level.info.cloudnative=TRACE --properties.mongo.hostName=localhost
 
-java -jar target/scs-sink-gemfire-1.0.0.RELEASE.jar --spring.cloud.stream.defaultBinder=rabbit --gemfire.pool.host-addresses=localhost:40404 
+java -jar target/scs-sink-gemfire-1.0.0.RELEASE.jar --spring.cloud.stream.defaultBinder=rabbit --gemfire.pool.connect-type=server --gemfire.pool.host-addresses=localhost:40404 --gemfire.region.region-name=RegRaw --gemfire.json=true --gemfire.key-expression="payload.getField('uuid')" 
 
 curl -H "Content-Type: text/plain" -X POST -d'468244D1361B8A3EB8D206CC394BC9E9,BB899DFEA9CC964B50C540A1D685CCFB,2013-01-01 00:00:00,2013-01-01 00:04:00,240,1.71,139.752268,35.677043,139.771699,35.697283,CSH,6.50,0.50,0.50,0.00,0.00,7.50' 'http://localhost:9000'
 ```
@@ -45,17 +45,18 @@ curl -H "Content-Type: text/plain" -X POST -d'468244D1361B8A3EB8D206CC394BC9E9,B
 ## 4. Run with docker deployment
 ### 4-1. Local Execution on RabbitMQ
 ```
-docker run komushi/scs-sink-gemfire --spring.cloud.stream.defaultBinder=rabbit --spring.rabbitmq.host=docker.for.mac.localhost --spring.rabbitmq.port=5672
+docker run komushi/scs-sink-gemfire --spring.cloud.stream.defaultBinder=rabbit --spring.rabbitmq.host=docker.for.mac.localhost --spring.rabbitmq.port=5672 --gemfire.pool.connect-type=server --gemfire.pool.host-addresses=docker.for.mac.localhost:40404 --gemfire.region.region-name=RegRaw --gemfire.json=true --gemfire.key-expression="payload.getField('uuid')" 
 ```
 
 ### 4-2. Deploy on AWS
 ```
-docker run komushi/scs-sink-gemfire --gemfire.pool.host-addresses=<gemfire-cacheserver-address>:40404
+docker run komushi/scs-sink-gemfire --gemfire.pool.host-addresses=<gemfire-cacheserver-address>:40404 --gemfire.pool.connect-type=server --gemfire.region.region-name=RegRaw --gemfire.json=true --gemfire.key-expression="payload.getField('uuid')" 
 ```
 
 # II. Appendix
-### Default Parameters - application.properties
+### Parameters - application.properties
 ```
+server.port=9200
 spring.cloud.stream.bindings.input.destination=transform_geotuple
 spring.cloud.stream.bindings.input.group=gemfire_rawjson 
 spring.cloud.stream.defaultBinder=kinesis
@@ -66,3 +67,4 @@ gemfire.region.region-name=RegRaw
 gemfire.json=true
 gemfire.key-expression="payload.getField('uuid')"
 ```
+
