@@ -15,6 +15,11 @@
 brew services start rabbitmq
 ```
 
+### 1-2. Start Geode Server
+```
+docker run -p 40404:40404 komushi/spring-boot-geode-server --properties.timeout=20 --properties.log-level=error
+```
+
 ## 2. Download and Build
 
 ```
@@ -45,7 +50,11 @@ curl -H "Content-Type: text/plain" -X POST -d'468244D1361B8A3EB8D206CC394BC9E9,B
 ## 4. Run with docker deployment
 ### 4-1. Local Execution on RabbitMQ
 ```
-docker run komushi/scs-sink-gemfire --server.port=9200 --spring.cloud.stream.defaultBinder=rabbit --spring.cloud.stream.bindings.input.destination=transform_geotuple --spring.cloud.stream.bindings.input.group=1 --spring.rabbitmq.host=docker.for.mac.localhost --spring.rabbitmq.port=5672 --gemfire.pool.connect-type=server --gemfire.pool.host-addresses=docker.for.mac.localhost:40404 --gemfire.region.region-name=RegRaw --gemfire.json=true --gemfire.key-expression="payload.getField('uuid')" 
+docker run -p 9000:9000 komushi/scs-source-http --spring.rabbitmq.host=docker.for.mac.localhost
+
+docker run komushi/scs-processor-geocoding-reverse --spring.rabbitmq.host=docker.for.mac.localhost --logging.level.info.cloudnative=TRACE
+
+docker run komushi/scs-sink-gemfire --spring.rabbitmq.host=docker.for.mac.localhost --gemfire.pool.host-addresses=docker.for.mac.localhost:40404 
 ```
 
 ### 4-2. Deploy on AWS
@@ -65,5 +74,5 @@ gemfire.pool.connect-type=server
 gemfire.pool.host-addresses=localhost:40404
 gemfire.region.region-name=RegRaw
 gemfire.json=true
-gemfire.key-expression="payload.getField('uuid')"
+gemfire.key-expression=payload.getField('uuid')
 ```
